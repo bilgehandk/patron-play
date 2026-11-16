@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PATRON</title>
+<style>
+  /* Arka plan: oyun alanının dışı boş siyah değil, neon ızgaralı bir "arcade kabini" zemini */
+  html,body{margin:0;height:100%;overflow:hidden;background:#07060f}
+  body{background:
+    radial-gradient(ellipse at 50% 0%,rgba(209,42,156,.14),transparent 55%),
+    radial-gradient(ellipse at 50% 100%,rgba(31,181,201,.12),transparent 55%),
+    repeating-linear-gradient(0deg,rgba(111,243,255,.035) 0 1px,transparent 1px 40px),
+    repeating-linear-gradient(90deg,rgba(111,243,255,.035) 0 1px,transparent 1px 40px),#07060f}
+  #game{position:fixed;inset:0;display:grid;place-items:center}
+  canvas{image-rendering:pixelated;image-rendering:crisp-edges;
+    box-shadow:0 0 0 2px #0b0a12,0 0 0 4px #3d3478,0 0 0 6px #14121f,0 0 50px rgba(111,243,255,.14),0 0 110px rgba(209,42,156,.16)}
+  #vig{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,rgba(0,0,0,0) 58%,rgba(8,6,20,.5) 100%)}
+  #iris{position:fixed;inset:0;background:#000;pointer-events:none;display:none}
+  #flash{position:fixed;inset:0;pointer-events:none;opacity:0;background:#fff;mix-blend-mode:screen}
+
+  /* HUD: oyun alanının %5 içinde (safe area), panel stili piksel sanatına uygun */
+  #ui{position:fixed;pointer-events:none;color:#c9d4ff;text-shadow:0 2px 0 #0b0a12;
+      font:700 clamp(9px,1.15vh,13px)/1.25 ui-monospace,Menlo,"Hiragino Sans","PingFang SC","Apple SD Gothic Neo",sans-serif;opacity:.94}
+  .plate{box-sizing:border-box;overflow:hidden;position:absolute;background:linear-gradient(90deg,rgba(40,18,64,.78),rgba(14,12,34,.66));padding:.3em .6em .3em .8em;
+         border:1px solid rgba(111,98,200,.7);border-left:3px solid #ff5fc4;box-shadow:0 0 0 1px rgba(11,10,18,.8),0 0 14px rgba(255,95,196,.14),inset 0 0 18px rgba(10,8,24,.55)}
+  #weapon b{color:#fff1c2;text-shadow:0 0 8px rgba(255,200,87,.85);font-size:1.12em}
+  #weapon span{font-size:.92em}
+  #tl{left:0;top:0;width:24em;height:3.4em}
+  #roomName{color:#ff5fc4;letter-spacing:.1em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #roomSub{display:flex;gap:.5em;align-items:center;margin-top:.35em}
+  #roomPips{display:flex;gap:3px}
+  #roomPips i{width:.7em;height:.32em;background:#2a2540;box-shadow:0 0 0 1px #0b0a12}
+  #roomPips i.done{background:#6ff3ff}
+  #roomPips i.cur{background:#ffc857}
+  #modeBadge{margin-left:auto;padding:.05em .5em;background:#1d1a3a;border:1px solid #4b3fa0;color:#86a8ff;font-size:.85em}
+  #tr{position:absolute;right:0;top:0;width:12em;height:3em;overflow:hidden;text-align:right}
+  #score{font:900 clamp(14px,2.1vh,26px)/1 ui-monospace,Menlo,monospace;color:#ff5fc4;text-shadow:0 2px 0 #4a1048;letter-spacing:.04em}
+  #combo{margin-top:.3em;display:flex;gap:.6em;align-items:center;justify-content:flex-end;color:#6ff3ff}
+  #comboBar{width:6em;height:.35em;background:#14121f;box-shadow:0 0 0 1px #0b0a12,0 0 0 2px #3d3478}
+  #comboTxt.pop{animation:cpop .28s ease-out}@keyframes cpop{0%{transform:scale(1.7)}100%{transform:scale(1)}}
+  #comboTxt{display:inline-block;font-weight:900;letter-spacing:.08em}
+  #comboBar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#1fb5c9,#6ff3ff);box-shadow:0 0 10px #6ff3ff}
+  #bl{left:0;bottom:0;width:23em;height:5.8em}
+  #weapon{color:#ffc857;letter-spacing:.08em;white-space:nowrap;overflow:hidden}
+  #pips{display:flex;flex-wrap:nowrap;overflow:hidden;gap:1px;margin:.25em 0;height:.8em}
+  #pips i{width:.3em;height:.7em;background:#ffc857;box-shadow:0 0 0 1px #0b0a12}
+  #pips i.off{background:#2a2540}
+  #dashRow{display:flex;gap:.6em;align-items:center;color:#86a8ff;font-size:.85em}
+  #dashWrap{flex:1;height:.35em;background:#14121f;box-shadow:0 0 0 1px #0b0a12,0 0 0 2px #3d3478}
+  #dashBar{display:block;height:100%;width:100%;background:#4a6bd6}
+  #chrRow{display:flex;gap:.6em;align-items:center;color:#c79bff;font-size:.85em;margin-top:.25em}
+  #chrWrap{flex:1;height:.35em;background:#14121f;box-shadow:0 0 0 1px #0b0a12,0 0 0 2px #3d3478}
+  #chrBar{display:block;height:100%;width:100%;background:#b07cff}
+  #br{right:0;bottom:0;width:8.5em;height:2.6em;text-align:right}
+  #hp{display:flex;gap:3px;justify-content:flex-end;margin-bottom:.35em;font-size:1.5em;line-height:1}
+  #hp i{font-style:normal;color:#ff5fc4;text-shadow:0 0 6px rgba(255,95,196,.7)}
+  #hp i.off{color:#2a2540;text-shadow:none}
+  #foesLabel,#foes{display:none}
+  #foesLabel{font-size:.8em;color:#8a84a0;letter-spacing:.1em}
+  #foes{display:flex;gap:2px;justify-content:flex-end;margin-top:.2em;flex-wrap:nowrap;overflow:hidden;height:.7em;align-items:center}
+  #foes i{width:.55em;height:.55em;background:#e0364a;box-shadow:0 0 0 1px #0b0a12}
+  #hint{position:absolute;left:50%;bottom:0;transform:translateX(-50%);color:#8a84a0;font-size:.75em;text-align:center;white-space:nowrap;max-width:62%;overflow:hidden;text-overflow:ellipsis;
+        transition:opacity 1.2s;background:rgba(10,8,24,.6);padding:.3em .8em}
+  #dev{position:absolute;left:50%;top:0;transform:translateX(-50%);color:#6ff3ff;opacity:.75;font-size:.72em;text-align:center;white-space:pre;display:none}
+  #banner{position:absolute;left:0;right:0;top:12%;padding:0 8%;box-sizing:border-box;text-align:center;color:#ffc857;font:900 clamp(13px,2.5vh,30px)/1.35 ui-monospace,monospace;
+          text-shadow:0 3px 0 #0b0a12,0 0 18px rgba(255,200,87,.35);white-space:pre-wrap}
+  #safe{position:fixed;pointer-events:none;border:1px dashed #ff5fc4;display:none}
+  .pop{position:fixed;pointer-events:none;font:800 clamp(14px,2.4vh,28px) ui-monospace,monospace;color:#ffc857;text-shadow:0 2px 0 #0b0a12;
+       transition:transform .7s ease-out,opacity .7s ease-in;white-space:pre}
+</style>
+  <script type="module" crossorigin src="./assets/index-ZJdYm8lq.js"></script>
+</head>
+<body>
+<div id="game"></div>
+<div id="vig"></div>
+<div id="flash"></div>
+<div id="iris"></div>
+<div id="ui">
+  <div id="tl" class="plate"><div id="roomName"></div><div id="roomSub"><div id="roomPips"></div><span id="modeBadge"></span></div></div>
+  <div id="tr"><div id="score">0</div><div id="combo"><span id="comboTxt"></span><div id="comboBar"><i></i></div></div></div>
+  <div id="bl" class="plate"><div id="weapon"></div><div id="pips"></div><div id="dashRow"><span id="dashLbl">DASH</span><div id="dashWrap"><i id="dashBar"></i></div></div><div id="chrRow"><span id="chrLbl">CHRONOS</span><div id="chrWrap"><i id="chrBar"></i></div></div></div>
+  <div id="br" class="plate"><div id="hp"></div><div id="foesLabel">KALAN</div><div id="foes"></div></div>
+  <div id="hint">WASD hareket · fare nişan/ateş · sağ tık / F yakın dövüş + saptırma · Shift dash/roll · Space zıpla (yan görünüm) · E silah al · R yeniden · M müzik · F1 safe area · F3 bilgi</div>
+  <div id="dev"></div>
+  <div id="banner"></div>
+</div>
+<div id="safe"></div>
+</body>
+</html>

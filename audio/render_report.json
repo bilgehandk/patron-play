@@ -1,0 +1,72 @@
+[
+  {
+    "file": "level1_t1",
+    "bpm": 118,
+    "bars": 8,
+    "samples": 520678,
+    "seconds": 16.271,
+    "expectedSeconds": 16.271,
+    "lufs": -17.1,
+    "ms": 1444
+  },
+  {
+    "file": "level1_t2",
+    "bpm": 130,
+    "bars": 8,
+    "samples": 472615,
+    "seconds": 14.769,
+    "expectedSeconds": 14.769,
+    "lufs": -16.6,
+    "ms": 1646
+  },
+  {
+    "file": "level1_t3",
+    "bpm": 142,
+    "bars": 8,
+    "samples": 432676,
+    "seconds": 13.521,
+    "expectedSeconds": 13.521,
+    "lufs": -16.1,
+    "ms": 1056
+  },
+  {
+    "file": "level1_t4",
+    "bpm": 156,
+    "bars": 8,
+    "samples": 393846,
+    "seconds": 12.308,
+    "expectedSeconds": 12.308,
+    "lufs": -15.6,
+    "ms": 1448
+  },
+  {
+    "file": "menu",
+    "bpm": 118,
+    "bars": 16,
+    "samples": 1041356,
+    "seconds": 32.542,
+    "expectedSeconds": 32.542,
+    "lufs": -18.1
+  },
+  {
+    "file": "jingle_score",
+    "samples": 194954,
+    "seconds": 6.092,
+    "lufs": -16.1
+  },
+  {
+    "file": "fx_death",
+    "samples": 28800,
+    "seconds": 0.9
+  },
+  {
+    "file": "fx_revive",
+    "samples": 32000,
+    "seconds": 1
+  },
+  {
+    "file": "fx_tierup",
+    "samples": 35200,
+    "seconds": 1.1
+  }
+]
